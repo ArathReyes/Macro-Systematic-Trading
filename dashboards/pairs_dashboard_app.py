@@ -1,23 +1,29 @@
 import os
+import sys
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
 import dash
 from dash import dcc, html, dash_table, Input, Output, State, no_update
 
-from PairsTrading import plot_spreads_dislocations, plot_spread_bollinger
-from PairsTrading import suitable_pairs
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from PairsTrading import plot_spreads_dislocations, plot_spread_bollinger, suitable_pairs
 
 import webbrowser
 from threading import Timer
 
 
 # Map user-friendly instrument names to data locations.
+MX_RATES_PATH = ROOT / "data" / "MX_Rates.xlsx"
 DATA_PATHS = {
-    "Bond": Path("Data/Treasuries.xlsx"),
-    "Swap": Path("Data/Rates.xlsx"),
-    "ASW": Path("Data/MX_Rates.xlsx"),
+    "Bond": MX_RATES_PATH,
+    "Swap": MX_RATES_PATH,
+    "ASW": MX_RATES_PATH,
 }
 
 
@@ -27,9 +33,9 @@ def _load_pairs_data(instrument: str) -> pd.DataFrame:
     so the dashboard can render even if files are missing.
     """
 
-    swap = pd.read_excel('data/MX_Rates.xlsx', index_col=0, sheet_name='Swap', parse_dates=True)
+    swap = pd.read_excel(MX_RATES_PATH, index_col=0, sheet_name='Swap', parse_dates=True)
     swap.index = [d.date() for d in swap.index]
-    bonds = pd.read_excel('data/MX_Rates.xlsx', index_col=0, sheet_name='Bonds', parse_dates=True)
+    bonds = pd.read_excel(MX_RATES_PATH, index_col=0, sheet_name='Bonds', parse_dates=True)
     bonds.index = [d.date() for d in bonds.index]
     tenors = swap.columns.intersection(bonds.columns)
     ASW = (bonds[tenors] - swap[tenors])*100

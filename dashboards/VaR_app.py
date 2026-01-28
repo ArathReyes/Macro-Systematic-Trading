@@ -1,4 +1,12 @@
 import os
+import sys
+from pathlib import Path
+from datetime import datetime, timedelta
+import json
+import warnings
+import webbrowser
+from threading import Timer
+
 import dash
 from dash import dcc, html, dash_table, Input, Output, State, ALL
 import pandas as pd
@@ -6,11 +14,10 @@ import numpy as np
 from scipy.stats import norm, chi2
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime, timedelta
-import json
-import warnings
-import webbrowser
-from threading import Timer
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from Dates import from_excel_date
 
@@ -34,7 +41,8 @@ np.random.seed(CONFIG['random_seed'])
 # DATA GENERATION (Replace with your loader)
 # ==========================================
 def generate_dummy_data():
-    spot = pd.read_excel('Data/FX.xlsx', sheet_name='Spot', index_col=0)
+    spot_path = ROOT / "data" / "FX.xlsx"
+    spot = pd.read_excel(spot_path, sheet_name='Spot', index_col=0)
     spot.drop('Date', inplace = True)
     spot.index.rename = 'Date'
     spot.index = spot.index.map(from_excel_date)
